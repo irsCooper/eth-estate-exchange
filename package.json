@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@nomicfoundation/hardhat-toolbox": "file:../.nvm/versions/node/v21.7.3/lib/node_modules/@nomicfoundation/hardhat-toolbox",
+    "hardhat": "file:../.nvm/versions/node/v21.7.3/lib/node_modules/hardhat"
+  }
+}
