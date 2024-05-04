@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.25;
+pragma solidity 0.8.24;
 pragma abicoder v2;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "./standart_token//token/ERC20/ERC20.sol";
 
 contract Eston is ERC20("Eston", "ESTON") {
     constructor(address account, uint totalSupply) {

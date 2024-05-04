@@ -1,8 +1,8 @@
-// SPDX-License-Identifier: MIT
-pragma solidity 0.8.25;
+ // SPDX-License-Identifier: MIT
+pragma solidity 0.8.24;
 pragma abicoder v2;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "./standart_token/token/ERC721/ERC721.sol";
 
 contract EstNft is ERC721("EsExNft", "ESEXN") {
 

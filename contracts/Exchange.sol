@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.25;
+pragma solidity 0.8.24;
 pragma abicoder v2;
 
 import "./EstNft.sol";
@@ -10,6 +10,8 @@ contract Contract {
     Eston  public token;
 
     address Owner;
+
+    uint PRICE_ESTON = 10000 wei;
 
     uint estateId = 1;
     
@@ -29,7 +31,6 @@ contract Contract {
     struct Deal {
         uint Id;
         Estate Estate;
-        address OwnerEstate;
         address Arendator;
         uint Mounth;
         uint PriceOneMounth;
@@ -64,8 +65,9 @@ contract Contract {
     mapping (uint => RequestRent[]) requestRent;
     
     mapping (address => uint) userArendsEstate; //число арендованных домов пользователя
-    mapping (address => mapping (uint => bool)) public estateArendator; //является ли пользователь арендатором недвижимости
-    mapping (address => mapping (uint => uint)) public userEstateToDealId; //является ли пользователь арендатором недвижимости
+    mapping (address => mapping (uint => bool)) public estateArendator; //является ли пользователь арендатором недвижимости 
+
+    mapping (address => mapping (uint => uint)) ownerIdDeal;
 
 
     modifier isEstate(uint tokenId) {
@@ -143,11 +145,11 @@ contract Contract {
         require(ae.OwnerEstate == msg.sender, "you are not owner this request");
         
         setUserArendsEstate(req.Arendator, ae.Estate.Id, true);
-        userEstateToDealId[msg.sender][ae.Estate.Id] = userDeal[msg.sender].length;
+
+        ownerIdDeal[msg.sender][ae.Estate.Id] = userDeal[msg.sender].length;
         userDeal[msg.sender].push(Deal(
             userDeal[msg.sender].length,
             ae.Estate,
-            msg.sender,
             req.Arendator,
             req.Mounth,
             ae.PriceOneMounth,
@@ -156,11 +158,9 @@ contract Contract {
         ));
 
 
-        userEstateToDealId[req.Arendator][ae.Estate.Id] = userDeal[req.Arendator].length;
         userDeal[req.Arendator].push(Deal(
             userDeal[req.Arendator].length,
             ae.Estate,
-            msg.sender,
             req.Arendator,
             req.Mounth,
             ae.PriceOneMounth,
@@ -199,4 +199,27 @@ contract Contract {
         return es;
     }
 
+
+    ///вводится id deal!!!!!!
+    function payRent(uint id, uint mounth) public  {
+        require(userDeal[msg.sender].length > id, "invalid id");
+        Deal storage deal = userDeal[msg.sender][id];
+        address owner = nft.OwnerOf(deal.Estate.Id);
+        require(token._BalanceOf(msg.sender) >= deal.PriceOneMounth * mounth, "not money");
+        require(deal.MounthPay + mounth <= deal.Mounth && deal.MounthPay >= deal.Mounth - deal.MounthPay + mounth, "invalid mounth");
+
+        token._Transfer(msg.sender, owner, deal.PriceOneMounth * mounth);
+        deal.MounthPay += mounth;
+
+        if(deal.MounthPay == deal.Mounth) {
+            deal.Active = false;
+            userDeal[owner][ownerIdDeal[owner][deal.Estate.Id]].Active = false;
+        }
+    }
+
+
+    function payToken() public payable {
+        token._Transfer(Owner, msg.sender, msg.value / PRICE_ESTON);
+        payable(msg.sender).transfer(msg.value % PRICE_ESTON);
+    }
 }
